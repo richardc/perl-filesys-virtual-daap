@@ -1,0 +1,5 @@
+head
+	docubug - it's Net::DAV::Server not Net::Server::DAV (doh)
+
+0.01	Monday 17th May, 2004
+	Initial CPAN release

@@ -31,7 +31,7 @@ Filesys::Virtual::DAAP - present a DAAP share as a VFS
 =head1 DESCRIPTION
 
 The module can be used to republish a DAAP share.  You'll probably
-want to use Net::Server::DAV or POE::Component::Server::FTP to
+want to use Net::DAV::Server or POE::Component::Server::FTP to
 re-export it in a browseable form.
 
 =cut
@@ -272,7 +272,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Filesys::Virtual::DAAP>.
 
 =head1 SEE ALSO
 
-L<Net::DAAP::Client::Auth>, L<Net::Server::DAV>, L<POE::Component::Server::FTP>
+L<Net::DAAP::Client::Auth>, L<Net::DAV::Server>, L<POE::Component::Server::FTP>
 
 =cut
 
