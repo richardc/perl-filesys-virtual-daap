@@ -58,7 +58,7 @@ sub _build_vfs {
     $self->_vfs( {} );
     for my $song (values %{ $self->_client->songs }) {
         bless $song, __PACKAGE__."::Song";
-        $self->_vfs->{artists}
+        $self->_vfs->{Library}
           { $song->{'daap.songcompilation'} ? 'Compilations'
                                             : $song->{'daap.songartist'} }
           { $song->{'daap.songalbum'} || "Unknown album" }
@@ -95,11 +95,11 @@ sub _ls_file {
     my ($name, $leaf) = @_;
     if (blessed $leaf) {
 #                       drwxr-xr-x  46 richardc  richardc  1564  5 May 10:03 Applications
-        return sprintf "-r--r--r--   1 richardc  richardc %8s 7 May 12:41\t%s",
+        return sprintf "-r--r--r--   1 richardc  richardc %8s 7 May 12:41 %s",
           $leaf->size, $leaf->filename;
     }
     else {
-        return sprintf "drwxr-xr-x   3 richardc  richardc %8s 7 May 12:41\t%s",
+        return sprintf "drwxr-xr-x   3 richardc  richardc %8s 7 May 12:41 %s",
           1024, $name;
     }
 }
