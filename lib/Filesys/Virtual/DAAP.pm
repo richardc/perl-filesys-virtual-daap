@@ -19,11 +19,13 @@ Filesys::Virtual::DAAP - present a DAAP share as a VFS
  use Filesys::Virtual::DAAP;
  my $fs = Filesys::Virtual::DAAP->new({
      host      => 'localhost',
+     port      => 3689, # the default
      cwd       => '/',
      root_path => '/',
      home_path => '/home',
  });
- my @albums = $fs->list("/albums");
+ my @albums    = $fs->list("/Library");
+ my @playlists = $fs->list("/Playlists");
 
 
 =head1 DESCRIPTION
@@ -31,9 +33,8 @@ Filesys::Virtual::DAAP - present a DAAP share as a VFS
 
 =cut
 
-# HACKY - mixin these from the ::Plain class, they only deal with the
-# mapping of root_path, cwd, and home_path, so they should be safe
-*_path_from_root = \&Filesys::Virtual::Plain::_path_from_root;
+# HACKY - mixin this from the ::Plain class, it only deals with the
+# mapping of root_path, cwd, and home_path, so it should be safe
 *_resolve_path   = \&Filesys::Virtual::Plain::_resolve_path;
 
 sub new {
@@ -51,12 +52,13 @@ sub new {
     return $self;
 }
 
-    use YAML;
+use YAML;
 
 sub _build_vfs {
     my $self = shift;
+    my $daap = $self->_client;
     $self->_vfs( {} );
-    for my $song (values %{ $self->_client->songs }) {
+    for my $song (values %{ $daap->songs }) {
         bless $song, __PACKAGE__."::Song";
         $self->_vfs->{Library}
           { $self->_fs_safe(
@@ -64,6 +66,26 @@ sub _build_vfs {
                                               : $song->{'daap.songartist'}) }
           { $self->_fs_safe( $song->{'daap.songalbum'} || "Unknown album" ) }
           { $song->filename } = $song;
+    }
+
+    for my $playlist (values %{ $daap->playlists }) {
+        my $i;
+        for my $song (@{ $daap->playlist( $playlist->{'dmap.itemid'} ) } ) {
+            next unless $song; # huh - how can this be false?  it is though.
+
+            # clone the data from the Song object, only override the
+            # daap.songtracknumber and the daap.songtrackcount, so the
+            # cleverness in ::Song->filename for generating a filename
+            # with the correct width prefix works
+            $song = bless {
+                %$song,
+                'daap.songtracknumber' => ++$i,
+                'daap.songtrackcount'  => $playlist->{'dmap.itemcount'},
+            }, __PACKAGE__."::Song";
+            $self->_vfs->{Playlists}
+              { $self->_fs_safe( $playlist->{'dmap.itemname'} ) }
+              { $song->filename } = $song;
+        }
     }
     #print Dump $self->_vfs;
 }
@@ -121,14 +143,16 @@ sub stat {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
     return unless $leaf;
+    my $blocksize = 1024;
     if (blessed $leaf) {
         # dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize, blocks
         return (0+$self, 0+$leaf, 0100444, 1, 0, 0, 0, $leaf->size,
-                0, 0, 0, 1024, ($leaf->size / 1024) + 1);
+                $leaf->atime, $leaf->mtime, $leaf->ctime,
+                $blocksize, ($leaf->size / $blocksize) + 1);
     }
     else {
-        return (0+$self, 0+$leaf, 042555, 1, 0, 0, 0, 1024,
-                0, 0, 0, 1024, 1);
+        return (0+$self, 0+$leaf, 042555, 1, 0, 0, 0, $blocksize,
+                0, 0, 0, $blocksize, 1);
     }
 }
 
@@ -220,6 +244,10 @@ sub filename {
 }
 
 sub size { $_[0]->{'daap.songsize'} }
+
+sub atime { 0 }
+sub mtime { 0 }
+sub ctime { 0 }
 
 =head1 AUTHOR
 
