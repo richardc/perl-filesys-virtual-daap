@@ -196,9 +196,16 @@ sub downloadname {
     return $self->id . "." . $self->{'daap.songformat'};
 }
 
+sub tracknumber {
+    my $self = shift;
+    # twistedness - set the width based on the length of the maximum
+    # value, ensures alpha-sorting
+    return sprintf "%0".length($self->{'daap.songtrackcount'})."d",
+      $self->{'daap.songtracknumber'};
+}
 sub filename {
     my $self = shift;
-    return $self->{'daap.songtracknumber'} . " " . $self->{'dmap.itemname'} .
+    return $self->tracknumber. " " . $self->{'dmap.itemname'} .
       "." . $self->{'daap.songformat'};
 }
 
