@@ -59,9 +59,10 @@ sub _build_vfs {
     for my $song (values %{ $self->_client->songs }) {
         bless $song, __PACKAGE__."::Song";
         $self->_vfs->{Library}
-          { $song->{'daap.songcompilation'} ? 'Compilations'
-                                            : $song->{'daap.songartist'} }
-          { $song->{'daap.songalbum'} || "Unknown album" }
+          { $self->_fs_safe(
+              $song->{'daap.songcompilation'} ? 'Compilations'
+                                              : $song->{'daap.songartist'}) }
+          { $self->_fs_safe( $song->{'daap.songalbum'} || "Unknown album" ) }
           { $song->filename } = $song;
     }
     #print Dump $self->_vfs;
@@ -187,6 +188,13 @@ sub close_read {
 sub open_write { return }
 sub close_write { 0 }
 
+sub _fs_safe {
+    my $self = shift;
+    my $file = shift;
+    $file =~ s{/}{_}g;
+    return $file;
+}
+
 package Filesys::Virtual::DAAP::Song;
 sub id { $_[0]->{'dmap.itemid'} }
 
@@ -203,10 +211,12 @@ sub tracknumber {
     return sprintf "%0".length($self->{'daap.songtrackcount'})."d",
       $self->{'daap.songtracknumber'};
 }
+
 sub filename {
     my $self = shift;
-    return $self->tracknumber. " " . $self->{'dmap.itemname'} .
+    my $name = $self->tracknumber. " " . $self->{'dmap.itemname'} .
       "." . $self->{'daap.songformat'};
+    return Filesys::Virtual::DAAP->_fs_safe( $name );
 }
 
 sub size { $_[0]->{'daap.songsize'} }
