@@ -14,7 +14,7 @@ POE::Component::Server::FTP->spawn(
         host      => $host,
         root_path => '/',
         cwd       => '/',
-        home_path => '/home',
+        home_path => '/',
     },
     # use 0 to disable these Limits
     DownloadLimit   => 0,

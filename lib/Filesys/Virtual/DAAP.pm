@@ -79,6 +79,27 @@ sub list {
     return blessed $leaf ? $leaf->filename : keys %{ $leaf };
 }
 
+sub list_details {
+    my $self = shift;
+    my $leaf = $self->_get_leaf( shift );
+
+    return blessed $leaf ? $self->_ls_file( $leaf->filename => $leaf ) :
+      map { $self->_ls_file( $_ => $leaf->{$_} ) } keys %{ $leaf };
+}
+
+sub _ls_file {
+    my $self = shift;
+    my ($name, $leaf) = @_;
+    if (blessed $leaf) {
+#                       drwxr-xr-x  46 richardc  richardc  1564  5 May 10:03 Applications
+        return sprintf "-r--r--r--   1 richardc  richardc %8s 7 May 12:41 %s",
+          $leaf->size, $leaf->filename;
+    }
+    else {
+        return sprintf "drwxr-xr-x   3 richardc  richardc %8s 7 May 12:41 %s",
+          1024, $name;
+    }
+}
 
 sub chdir {
     my $self = shift;
@@ -95,6 +116,12 @@ sub modtime { return (0, "") }
 sub stat {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
+    return $self->_stat( $leaf );
+}
+
+sub _stat {
+    my $self = shift;
+    my $leaf = shift;
     if (blessed $leaf) {
         # dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize, blocks
         return (0+$self, 0+$leaf, 0100444, 1, 0, 0, 0, $leaf->size,
