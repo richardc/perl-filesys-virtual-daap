@@ -3,9 +3,11 @@ use strict;
 use warnings;
 use Net::DAAP::Client::Auth;
 use Filesys::Virtual::Plain ();
+use File::Temp qw( tempdir );
+use IO::File;
 use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
-__PACKAGE__->mk_accessors(qw( cwd root_path home_path host _client _vfs ));
+__PACKAGE__->mk_accessors(qw( cwd root_path home_path host _client _vfs _tmpdir ));
 our $VERSION = '0.01';
 
 =head1 NAME
@@ -37,6 +39,8 @@ Filesys::Virtual::DAAP - present a DAAP share as a VFS
 sub new {
     my $ref = shift;
     my $self = $ref->SUPER::new(@_);
+    $self->_tmpdir( tempdir( CLEANUP => 1 ) );
+
     $self->_client( Net::DAAP::Client::Auth->new(
         SERVER_HOST => $self->host,
        ) );
@@ -60,21 +64,113 @@ sub _build_vfs {
     #print Dump $self->_vfs;
 }
 
-sub list {
+sub _get_leaf {
     my $self = shift;
     my $path = $self->_resolve_path( shift );
     my (undef, @chunks) = split m{/}, $path;
     my $walk = $self->_vfs;
     $walk = $walk->{$_} for @chunks;
-    return blessed $walk ? $walk->filename : keys %{ $walk };
+    return $walk;
+}
+
+sub list {
+    my $self = shift;
+    my $leaf = $self->_get_leaf( shift );
+    return blessed $leaf ? $leaf->filename : keys %{ $leaf };
 }
 
 
+sub chdir {
+    my $self = shift;
+    my $to   = $self->_resolve_path( shift );
+    my $leaf = $self->_get_leaf( $to );
+    return undef unless ref $leaf eq 'HASH';
+    return $self->cwd( $to );
+}
+
+
+# well if ::Plain can't be bothered, we can't be bothered either
+sub modtime { return (0, "") }
+
+sub stat {
+    my $self = shift;
+    my $leaf = $self->_get_leaf( shift );
+    if (blessed $leaf) {
+        # dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize, blocks
+        return (0+$self, 0+$leaf, 0100444, 1, 0, 0, 0, $leaf->size,
+                0, 0, 0, 1024, ($leaf->size / 1024) + 1);
+    }
+    else {
+        return (0+$self, 0+$leaf, 042555, 1, 0, 0, 0, 1024,
+                0, 0, 0, 1024, 1);
+    }
+}
+
+sub size {
+    my $self = shift;
+    return ( $self->stat( shift ))[7];
+}
+
+sub test {
+    my $self = shift;
+    my $test = shift;
+    my $leaf = $self->_get_leaf( shift );
+
+    local $_ = $test;
+    return 1  if /r/i;
+    return '' if /w/i;
+    return 1  if /x/i && !blessed $leaf;
+    return '' if /x/i;
+    return 1  if /o/i;
+
+    return 1  if /e/;
+    return '' if /z/;
+    return $leaf->size if /s/ && blessed $leaf;
+    return 1024 if /s/;
+
+    return 1  if /f/ && blessed $leaf;
+    return '' if /f/;
+    return 1  if /d/ && !blessed $leaf;
+    return '' if /[dpSbctugkT]/;
+    return 1  if /B/;
+    return 0  if /[MAC]/;
+    die "Don't understand -$test";
+}
+
+# Don't touch our filez
+sub chmod { 0 }
+sub mkdir { 0 }
+sub delete { 0 }
+sub rmdir { 0 }
+
+sub login { 1 }
+
+sub open_read {
+    my $self = shift;
+    my $leaf = $self->_get_leaf( shift );
+    $self->_client->save( $self->_tmpdir, $leaf->id );
+    return IO::File->new( $self->_tmpdir . "/". $leaf->id . ".mp3" );
+}
+
+sub close_read {
+    my $self = shift;
+    my $fh = shift;
+    close $fh;
+    return 1;
+}
+
+sub open_write { return }
+sub close_write { 0 }
+
 package Filesys::Virtual::DAAP::Song;
+sub id { $_[0]->{'dmap.itemid'} }
+
 sub filename {
     my $self = shift;
     return $self->{'dmap.itemname'} . "." . $self->{'daap.songformat'};
 }
+
+sub size { $_[0]->{'daap.songsize'} }
 
 =head1 AUTHOR
 
