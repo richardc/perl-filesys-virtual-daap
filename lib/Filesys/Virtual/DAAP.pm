@@ -58,7 +58,9 @@ sub _build_vfs {
     $self->_vfs( {} );
     for my $song (values %{ $self->_client->songs }) {
         bless $song, __PACKAGE__."::Song";
-        $self->_vfs->{artists}{ $song->{'daap.songartist'} }
+        $self->_vfs->{artists}
+          { $song->{'daap.songcompilation'} ? 'Compilations'
+                                            : $song->{'daap.songartist'} }
           { $song->{'daap.songalbum'} || "Unknown album" }
           { $song->filename } = $song;
     }
@@ -196,7 +198,8 @@ sub downloadname {
 
 sub filename {
     my $self = shift;
-    return $self->{'dmap.itemname'} . "." . $self->{'daap.songformat'};
+    return $self->{'daap.songtracknumber'} . " " . $self->{'dmap.itemname'} .
+      "." . $self->{'daap.songformat'};
 }
 
 sub size { $_[0]->{'daap.songsize'} }
