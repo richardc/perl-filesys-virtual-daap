@@ -1,4 +1,8 @@
+0.03	Tuesday 22nd March, 2005	
 	Depend on Net::DAAP::Client 0.4 so we can extend the SONG_ATTRIBUTES
+	Filesys::Virtual plain has its own dist now, so needs a
+	seperate line in the Build.PL
+	Deleted the reference to rt.cpan.org as I don't want to use it anymore.
 
 0.02	Tuesday 18th May, 2004
 	docubug - it's Net::DAV::Server not Net::Server::DAV (doh)

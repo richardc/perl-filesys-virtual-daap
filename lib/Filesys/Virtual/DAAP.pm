@@ -8,7 +8,7 @@ use IO::File;
 use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
 __PACKAGE__->mk_accessors(qw( cwd root_path home_path host port _client _vfs _tmpdir ));
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -266,13 +266,6 @@ Copyright 2004 Richard Clamp.  All Rights Reserved.
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
-
-=head1 BUGS
-
-None known.
-
-Bugs should be reported to me via the CPAN RT system.
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Filesys::Virtual::DAAP>.
 
 =head1 SEE ALSO
 

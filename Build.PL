@@ -7,6 +7,7 @@ Module::Build->new(
         'perl' => 5.006,
         'Class::Accessor'  => 0,
         'Filesys::Virtual' => 0,
+        'Filesys::Virtual::Plain' => 0,
         'Net::DAAP::Client' => '0.4',
     },
     build_requires => {
