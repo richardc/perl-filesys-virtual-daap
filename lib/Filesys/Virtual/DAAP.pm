@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Net::DAAP::Client::Auth;
 use Filesys::Virtual::Plain ();
+use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
 __PACKAGE__->mk_accessors(qw( cwd root_path home_path host _client _vfs ));
 our $VERSION = '0.01';
@@ -65,7 +66,8 @@ sub list {
     my (undef, @chunks) = split m{/}, $path;
     my $walk = $self->_vfs;
     $walk = $walk->{$_} for @chunks;
-    return keys %{ $walk };
+
+    return blessed $walk ? $walk->filename : keys %{ $walk };
 }
 
 

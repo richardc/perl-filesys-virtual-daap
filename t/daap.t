@@ -23,3 +23,7 @@ is_deeply( [ sort $fs->list("/artists/Crysler/Unknown album") ],
              "Insomnia - mastered.mp3",
              "Your Voice - mastered.mp3" ],
            "found Crysler/Unknown album/*.mp3" );
+
+is_deeply( [ sort $fs->list("/artists/Crysler/Unknown album/Games - mastered.mp3") ],
+           [ "Games - mastered.mp3" ],
+           "found Crysler/Unknown album/Games - mastered.mp3" );
