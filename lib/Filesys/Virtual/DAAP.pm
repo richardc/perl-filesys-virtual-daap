@@ -1,9 +1,10 @@
 package Filesys::Virtual::DAAP;
 use strict;
 use warnings;
+use Net::DAAP::Client::Auth;
 use Filesys::Virtual::Plain ();
 use base qw( Filesys::Virtual Class::Accessor::Fast );
-__PACKAGE__->mk_accessors(qw( cwd root_path home_path host ));
+__PACKAGE__->mk_accessors(qw( cwd root_path home_path host _client _vfs ));
 our $VERSION = '0.01';
 
 =head1 NAME
@@ -32,7 +33,47 @@ Filesys::Virtual::DAAP - present a DAAP share as a VFS
 *_path_from_root = \&Filesys::Virtual::Plain::_path_from_root;
 *_resolve_path   = \&Filesys::Virtual::Plain::_resolve_path;
 
+sub new {
+    my $ref = shift;
+    my $self = $ref->SUPER::new(@_);
+    $self->_client( Net::DAAP::Client::Auth->new(
+        SERVER_HOST => $self->host,
+       ) );
+    $self->_client->{DEBUG} = 0; # SHUT UP
+    $self->_client->connect;
+    $self->_build_vfs;
+    return $self;
+}
 
+    use YAML;
+
+sub _build_vfs {
+    my $self = shift;
+    $self->_vfs( {} );
+    for my $song (values %{ $self->_client->songs }) {
+        bless $song, __PACKAGE__."::Song";
+        $self->_vfs->{artists}{ $song->{'daap.songartist'} }
+          { $song->{'daap.songalbum'} || "Unknown album" }
+          { $song->filename } = $song;
+    }
+    #print Dump $self->_vfs;
+}
+
+sub list {
+    my $self = shift;
+    my $path = $self->_resolve_path( shift );
+    my (undef, @chunks) = split m{/}, $path;
+    my $walk = $self->_vfs;
+    $walk = $walk->{$_} for @chunks;
+    return keys %{ $walk };
+}
+
+
+package Filesys::Virtual::DAAP::Song;
+sub filename {
+    my $self = shift;
+    return $self->{'dmap.itemname'} . "." . $self->{'daap.songformat'};
+}
 
 =head1 AUTHOR
 
