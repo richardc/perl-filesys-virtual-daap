@@ -6,12 +6,14 @@ use Filesys::Virtual::DAAP;
 
 my $host = shift || 'localhost';
 my $port = shift || 2112;
+my $daap_port = shift || 3689;
 print "Republishing $host on ftp://localhost:$port/\n";
 POE::Component::Server::FTP->spawn(
     ListenPort      => $port,
     FilesystemClass => 'Filesys::Virtual::DAAP',
     FilesystemArgs  => {
         host      => $host,
+        port      => $daap_port,
         root_path => '/',
         cwd       => '/',
         home_path => '/',

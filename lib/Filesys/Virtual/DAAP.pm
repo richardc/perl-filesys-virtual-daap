@@ -7,7 +7,7 @@ use File::Temp qw( tempdir );
 use IO::File;
 use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
-__PACKAGE__->mk_accessors(qw( cwd root_path home_path host _client _vfs _tmpdir ));
+__PACKAGE__->mk_accessors(qw( cwd root_path home_path host port _client _vfs _tmpdir ));
 our $VERSION = '0.01';
 
 =head1 NAME
@@ -45,6 +45,7 @@ sub new {
         SERVER_HOST => $self->host,
        ) );
     $self->_client->{DEBUG} = 0; # SHUT UP
+    $self->_client->{SERVER_PORT} = $self->port || 3689;
     $self->_client->connect;
     $self->_build_vfs;
     return $self;
@@ -84,7 +85,7 @@ sub list_details {
     my $leaf = $self->_get_leaf( shift );
 
     return blessed $leaf ? $self->_ls_file( $leaf->filename => $leaf ) :
-      map { $self->_ls_file( $_ => $leaf->{$_} ) } keys %{ $leaf };
+      map { $self->_ls_file( $_ => $leaf->{$_} ) } sort keys %{ $leaf };
 }
 
 sub _ls_file {
