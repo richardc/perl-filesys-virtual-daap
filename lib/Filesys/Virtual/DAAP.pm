@@ -77,7 +77,7 @@ sub _get_leaf {
 sub list {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
-    return blessed $leaf ? $leaf->filename : qw( . .. ), keys %{ $leaf };
+    return blessed $leaf ? $leaf->filename : qw( . .. ), sort keys %{ $leaf };
 }
 
 sub list_details {
@@ -172,7 +172,7 @@ sub open_read {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
     $self->_client->save( $self->_tmpdir, $leaf->id );
-    return IO::File->new( $self->_tmpdir . "/". $leaf->id . ".mp3" );
+    return IO::File->new( $self->_tmpdir . "/". $leaf->downloadname );
 }
 
 sub close_read {
@@ -187,6 +187,12 @@ sub close_write { 0 }
 
 package Filesys::Virtual::DAAP::Song;
 sub id { $_[0]->{'dmap.itemid'} }
+
+# what DAAP::Client will save it as
+sub downloadname {
+    my $self = shift;
+    return $self->id "." . $self->{'daap.songformat'};
+}
 
 sub filename {
     my $self = shift;
