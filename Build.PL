@@ -7,7 +7,7 @@ Module::Build->new(
         'perl' => 5.006,
         'Class::Accessor'  => 0,
         'Filesys::Virtual' => 0,
-        'Net::DAAP::Client::Auth' => 0,
+        'Net::DAAP::Client::Auth' => '0.12',
     },
     build_requires => {
         'Test::More' => 0,
