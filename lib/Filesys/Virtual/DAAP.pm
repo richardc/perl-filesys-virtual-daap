@@ -1,25 +1,36 @@
 package Filesys::Virtual::DAAP;
-
 use strict;
-#use warnings;
-
-
+use warnings;
+use Filesys::Virtual::Plain ();
+use base qw( Filesys::Virtual Class::Accessor::Fast );
+__PACKAGE__->mk_accessors(qw( cwd root_path home_path host ));
+our $VERSION = '0.01';
 
 =head1 NAME
 
-Filesys::Virtual::DAAP - 
+Filesys::Virtual::DAAP - present a DAAP share as a VFS
 
 =head1 SYNOPSIS
 
-  use Filesys::Virtual::DAAP;
-
+ use Filesys::Virtual::DAAP;
+ my $fs = Filesys::Virtual::DAAP->new({
+     host      => 'localhost',
+     cwd       => '/',
+     root_path => '/',
+     home_path => '/home',
+ });
+ my @albums = $fs->list("/albums");
 
 
 =head1 DESCRIPTION
 
 
-
 =cut
+
+# HACKY - mixin these from the ::Plain class, they only deal with the
+# mapping of root_path, cwd, and home_path, so they should be safe
+*_path_from_root = \&Filesys::Virtual::Plain::_path_from_root;
+*_resolve_path   = \&Filesys::Virtual::Plain::_resolve_path;
 
 
 

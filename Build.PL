@@ -5,6 +5,8 @@ Module::Build->new(
     license     => 'perl',
     requires    => {
         'perl' => 5.006,
+        'Filesys::Virtual' => 0,
+        'Net::DAAP::Client::Auth' => 0,
     },
     build_requires => {
         'Test::More' => 0,
