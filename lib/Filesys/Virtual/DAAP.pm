@@ -8,7 +8,7 @@ use IO::File;
 use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
 __PACKAGE__->mk_accessors(qw( cwd root_path home_path host port _client _vfs _tmpdir ));
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 NAME
 
