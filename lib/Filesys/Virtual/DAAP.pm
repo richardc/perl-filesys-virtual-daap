@@ -8,7 +8,7 @@ use IO::File;
 use Scalar::Util qw( blessed );
 use base qw( Filesys::Virtual Class::Accessor::Fast );
 __PACKAGE__->mk_accessors(qw( cwd root_path home_path host port _client _vfs _tmpdir ));
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -54,8 +54,6 @@ sub new {
     $self->_build_vfs;
     return $self;
 }
-
-use YAML;
 
 sub _build_vfs {
     my $self = shift;
@@ -105,12 +103,14 @@ sub _get_leaf {
 sub list {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
+    return unless $leaf;
     return blessed $leaf ? $leaf->filename : qw( . .. ), sort keys %{ $leaf };
 }
 
 sub list_details {
     my $self = shift;
     my $leaf = $self->_get_leaf( shift );
+    return unless $leaf;
 
     return blessed $leaf ? $self->_ls_file( $leaf->filename => $leaf ) :
       map { $self->_ls_file( $_ => $leaf->{$_} ) } qw( . .. ), sort keys %{ $leaf };
@@ -168,6 +168,7 @@ sub test {
     my $self = shift;
     my $test = shift;
     my $leaf = $self->_get_leaf( shift );
+    return '' unless $leaf;
 
     local $_ = $test;
     return 1  if /r/i;
@@ -252,6 +253,10 @@ sub atime { 0 }
 sub mtime { 0 }
 sub ctime { 0 }
 
+1;
+
+__END__
+
 =head1 AUTHOR
 
 Richard Clamp <richardc@unixbeard.net>
@@ -276,4 +281,3 @@ L<Net::DAAP::Client::Auth>, L<Net::DAV::Server>, L<POE::Component::Server::FTP>
 
 =cut
 
-1;

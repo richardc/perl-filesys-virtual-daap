@@ -1,5 +1,7 @@
-head
+0.02	Tuesday 18th May, 2004
 	docubug - it's Net::DAV::Server not Net::Server::DAV (doh)
+	Threw in some more gurards against invalid file paths.
+	Removed a stealth dependency on YAML.
 
 0.01	Monday 17th May, 2004
 	Initial CPAN release
