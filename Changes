@@ -1,3 +1,5 @@
+	Depend on Net::DAAP::Client 0.4 so we can extend the SONG_ATTRIBUTES
+
 0.02	Tuesday 18th May, 2004
 	docubug - it's Net::DAV::Server not Net::Server::DAV (doh)
 	Threw in some more gurards against invalid file paths.

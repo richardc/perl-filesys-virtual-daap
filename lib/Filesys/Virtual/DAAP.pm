@@ -1,7 +1,7 @@
 package Filesys::Virtual::DAAP;
 use strict;
 use warnings;
-use Net::DAAP::Client::Auth 0.12;
+use Net::DAAP::Client 0.4;
 use Filesys::Virtual::Plain ();
 use File::Temp qw( tempdir );
 use IO::File;
@@ -45,10 +45,9 @@ sub new {
     my $self = $ref->SUPER::new(@_);
     $self->_tmpdir( tempdir( CLEANUP => 1 ) );
 
-    $self->_client( Net::DAAP::Client::Auth->new(
-        SERVER_HOST => $self->host,
-       ) );
-    $self->_client->{DEBUG} = 0; # SHUT UP
+    $self->_client( Net::DAAP::Client->new( $self->host ) );
+    push @{ $self->_client->{SONG_ATTRIBUTES} },
+      qw( daap.songcompilation daap.songtracknumber daap.songtrackcount );
     $self->_client->{SERVER_PORT} = $self->port || 3689;
     $self->_client->connect;
     $self->_build_vfs;
