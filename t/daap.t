@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-use Test::More tests => 3;
+use Test::More tests => 6;
 use Filesys::Virtual::DAAP;
 
 if (eval { require Test::Differences; 1 }) {
@@ -24,6 +24,16 @@ is_deeply( [ sort $fs->list("/artists/Crysler/Unknown album") ],
              "Your Voice - mastered.mp3" ],
            "found Crysler/Unknown album/*.mp3" );
 
-is_deeply( [ sort $fs->list("/artists/Crysler/Unknown album/Games - mastered.mp3") ],
+is_deeply( [ $fs->list("/artists/Crysler/Unknown album/Games - mastered.mp3") ],
            [ "Games - mastered.mp3" ],
            "found Crysler/Unknown album/Games - mastered.mp3" );
+
+is_deeply( [ $fs->list("/artists/Crysler/Unknown album/The sun has got his hat on.mp3") ],
+           [ ],
+           "did not find Crysler/Unknown album/The sun has got his hat on.mp3" );
+
+is_deeply( [ $fs->list("/artists/Superpop/Unknown album/one.mp3") ],
+           [ ],
+           "did not find Superpop/Unknown album/one.mp3" );
+
+

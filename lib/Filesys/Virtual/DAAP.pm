@@ -66,7 +66,6 @@ sub list {
     my (undef, @chunks) = split m{/}, $path;
     my $walk = $self->_vfs;
     $walk = $walk->{$_} for @chunks;
-
     return blessed $walk ? $walk->filename : keys %{ $walk };
 }
 
