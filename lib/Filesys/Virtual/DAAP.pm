@@ -191,7 +191,7 @@ sub id { $_[0]->{'dmap.itemid'} }
 # what DAAP::Client will save it as
 sub downloadname {
     my $self = shift;
-    return $self->id "." . $self->{'daap.songformat'};
+    return $self->id . "." . $self->{'daap.songformat'};
 }
 
 sub filename {
