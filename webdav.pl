@@ -20,17 +20,16 @@ $webdav->filesys($filesys);
 my $d = HTTP::Daemon->new( LocalAddr => 'localhost',
                            LocalPort => 4242, ReuseAddr => 1) || die;
 print "Please contact me at: <URL:", $d->url, ">\n";
+
 while (my $c = $d->accept) {
     while (my $request = $c->get_request) {
 
         #die if $request->header('X-Litmus') =~ 'copymove: 5';
-        warn '[' . $request->method . " " . $request->uri . "]\n";
-        #print $request->as_string;
+        print '[' . $request->method . " " . $request->uri . "]\n";
         my $response = $webdav->run($request);
         $c->send_response ($response);
-        #  print "Response:\n" . $response->as_string . "\n";
+        #print "Response:\n" . $response->as_string . "\n";
     }
     $c->close;
     undef($c);
 }
-
